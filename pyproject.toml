@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "treasury-agent"
+version = "0.2.0"
+description = "Architected LangGraph-based Treasury & Cash Management Agent with mock APIs, RAG, forecasting, and Gradio UI."
+authors = ["You <you@example.com>"]
+readme = "README.md"
+packages = [{ include = "treasury_agent" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+langgraph = "==1.0.2"
+langchain = "==1.0.5"
+langchain-community = "^0.3.0"
+fastapi = "^0.115.0"
+uvicorn = "^0.30.0"
+httpx = "^0.27.0"
+pydantic = "^2.7.0"
+pandas = "^2.2.2"
+numpy = "^2.1.0"
+statsmodels = "^0.14.2"
+scikit-learn = "^1.5.2"
+faiss-cpu = "^1.8.0"
+tiktoken = "^0.7.0"
+python-dotenv = "^1.0.1"
+pydantic-settings = "^2.6.0"
+gradio = "^5.3.0"
+jinja2 = "^3.1.4"
+rich = "^13.9.2"
+openai = "^1.52.0"
+anthropic = "^0.39.0"
+langchain-openai = "^1.0.2"
+langchain-text-splitters = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.0"
+pytest = "^8.2.0"
+ruff = "^0.6.9"
+mypy = "^1.11.1"
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
