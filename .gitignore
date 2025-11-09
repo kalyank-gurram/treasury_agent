@@ -85,6 +85,15 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.next/
+.turbo/
+.vercel/
+.swc/
+*.tsbuildinfo
+.eslintcache
+coverage/
+storybook-static/
+*.cache
 
 # ─────────────────────────────
 #  Docker / Deploy
@@ -112,3 +121,24 @@ langchain_store/
 langgraph_store/
 langchain.db
 langgraph.db
+
+# ─────────────────────────────
+#  Improved Structure
+# ─────────────────────────────
+# Logs directory
+logs/*.log
+logs/debug/
+logs/error/
+
+# Tools output
+tools/output/
+tools/temp/
+
+# Deployment artifacts
+deployment/temp/
+deployment/*.backup
+
+# Documentation build
+docs/_build/
+docs/site/
+

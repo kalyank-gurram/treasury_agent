@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "treasury-agent"
-version = "0.2.0"
-description = "Architected LangGraph-based Treasury & Cash Management Agent with mock APIs, RAG, forecasting, and Gradio UI."
+version = "0.3.0"
+description = "Architected LangGraph-based Treasury & Cash Management Agent with mock APIs, RAG, forecasting, and Next.js UI."
 authors = ["You <you@example.com>"]
 readme = "README.md"
 packages = [{ include = "treasury_agent" }]
@@ -23,13 +23,17 @@ faiss-cpu = "^1.8.0"
 tiktoken = "^0.7.0"
 python-dotenv = "^1.0.1"
 pydantic-settings = "^2.6.0"
-gradio = "^5.3.0"
 jinja2 = "^3.1.4"
 rich = "^13.9.2"
 openai = "^1.52.0"
 anthropic = "^0.39.0"
 langchain-openai = "^1.0.2"
 langchain-text-splitters = "^1.0.0"
+python-json-logger = "^2.0.7"
+pyyaml = "^6.0.1"
+bcrypt = "^5.0.0"
+pyjwt = "^2.10.1"
+email-validator = "^2.3.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"

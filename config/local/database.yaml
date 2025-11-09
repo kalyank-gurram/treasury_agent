@@ -1,0 +1,24 @@
+database:
+  host: localhost
+  port: 5432
+  name: treasury_local
+  username: treasury_user
+  password: local_dev_password
+  pool_size: 10
+  max_overflow: 20
+  ssl_mode: disabled
+  
+redis:
+  host: localhost
+  port: 6379
+  db: 0
+  password: null
+  ssl: false
+  
+mongodb:
+  host: localhost
+  port: 27017
+  name: treasury_analytics_local
+  username: null
+  password: null
+  ssl: false
