@@ -58,12 +58,12 @@ def configure_dependencies() -> Container:
     
     # Register application services (will be added when server is in Python path)
     try:
-        from ...services.persistent_chat import PersistentChatService, create_persistent_chat_service
+        from ...langchain import LangChainChatService, create_langchain_chat_service
         
-        # Register PersistentChatService as singleton with factory
+        # Register LangChainChatService as singleton with factory
         container.register_singleton(
-            PersistentChatService,
-            factory=lambda: create_persistent_chat_service(
+            LangChainChatService,
+            factory=lambda: create_langchain_chat_service(
                 treasury_service=container.get(TreasuryDomainService),
                 container=container
             )

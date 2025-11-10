@@ -24,6 +24,13 @@ app = FastAPI(
     description="Enterprise Treasury Management Microservice with MockBankAPI"
 )
 
+# --- Import LangChainChatService ---
+try:
+    from services.treasury_service.langchain import LangChainChatService
+    langchain_chat_service = LangChainChatService()
+except ImportError:
+    langchain_chat_service = None
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -242,122 +249,44 @@ async def chat_history():
     """Return recent chat history messages."""
     return {"messages": CHAT_HISTORY}
 
+
+# --- Updated /chat/message endpoint to use LangChainChatService ---
 @app.post("/chat/message")
 async def chat_message(message: dict):
-    """Treasury chat endpoint with domain intelligence & liquidity risk analysis."""
-    # Support both "message" and "query" keys
+    """Treasury chat endpoint using LangChainChatService."""
     original_message = message.get("query") or message.get("message") or ""
-    user_message = original_message.lower().strip()
-
-    now = datetime.utcnow().isoformat()
-    user_entry = {"id": f"msg-{int(datetime.utcnow().timestamp()*1000)}-u", "role": "user", "content": original_message, "timestamp": now}
+    now = datetime.now().isoformat()
+    user_entry = {"id": f"msg-{int(datetime.now().timestamp()*1000)}-u", "role": "user", "content": original_message, "timestamp": now}
     _add_history(user_entry)
 
-    def respond(content: str, data: Dict | None = None):
-        entry = {
-            "id": f"msg-{int(datetime.utcnow().timestamp()*1000)}-a",
+    if not langchain_chat_service:
+        return {"error": "LangChainChatService not available. Please check installation."}
+
+    # Call LangChainChatService to process the chat message
+    try:
+        result = await langchain_chat_service.process_chat_with_memory(
+            question=original_message,
+            user_id="demo_user",  # Replace with actual user if available
+            entity=None,
+            user_role="user"
+        )
+        assistant_entry = {
+            "id": f"msg-{int(datetime.now().timestamp()*1000)}-a",
             "role": "assistant",
-            "content": content,
-            "timestamp": datetime.utcnow().isoformat(),
+            "content": result.get("formatted_response", result.get("result", "I'm sorry, I couldn't process that request.")),
+            "timestamp": datetime.now().isoformat()
         }
-        if data:
-            entry["data"] = data
-        _add_history(entry)
-        return entry
-
-    if not user_message:
-        return respond("Please provide a query. For example: 'latest payment approvals' or 'analyze liquidity risk'.")
-
-    tokens = set(user_message.split())
-
-    # --- Payment approvals ---
-    if {"payment", "approve", "approval"} & tokens:
-        if {"latest", "recent"} & tokens:
-            approvals = [
-                {"id": "PAY-001", "amount": 125000, "counterparty": "ABC Corp", "approved_by": "CFO", "date": "2025-11-10"},
-                {"id": "PAY-002", "amount": 75000, "counterparty": "XYZ Suppliers", "approved_by": "Manager", "date": "2025-11-09"},
-                {"id": "PAY-003", "amount": 200000, "counterparty": "DEF Industries", "approved_by": "CFO", "date": "2025-11-08"},
-            ]
-            text = "Latest payment approvals:\n" + "\n".join(
-                f"- {p['id']}: ${p['amount']:,} to {p['counterparty']} (approved by {p['approved_by']} on {p['date']})" for p in approvals
-            )
-            return respond(text, {"approvals": approvals})
-        if "pending" in tokens or "queue" in tokens or "waiting" in tokens:
-            pending = [
-                {"id": "PAY-204", "amount": 88000, "counterparty": "Global Parts", "status": "PENDING", "submitted": "2025-11-10"},
-                {"id": "PAY-219", "amount": 143000, "counterparty": "Metro Logistics", "status": "PENDING", "submitted": "2025-11-09"},
-            ]
-            txt = "Pending payments:\n" + "\n".join(
-                f"- {p['id']}: ${p['amount']:,} to {p['counterparty']} (submitted {p['submitted']})" for p in pending
-            )
-            return respond(txt, {"pending": pending})
-        return respond("Specify 'latest payment approvals' or include 'pending' to refine your payment query.")
-
-    # --- Cash position ---
-    if {"cash", "position", "balance"} & tokens:
-        cash_data = {
-            "checking": 5_200_000,
-            "savings": 8_300_000,
-            "investments": 2_250_000,
+        _add_history(assistant_entry)
+        return assistant_entry
+    except Exception as e:
+        assistant_entry = {
+            "id": f"msg-{int(datetime.now().timestamp()*1000)}-a",
+            "role": "assistant",
+            "content": f"I'm sorry, I encountered an error: {str(e)}",
+            "timestamp": datetime.now().isoformat()
         }
-        total = sum(cash_data.values())
-        text = (
-            "Current cash position:\n" +
-            f"- Checking: ${cash_data['checking']:,}\n" +
-            f"- Savings: ${cash_data['savings']:,}\n" +
-            f"- Investments: ${cash_data['investments']:,}\n\n" +
-            f"Total Balance: ${total:,}"
-        )
-        return respond(text, {"cash_position": cash_data, "total_balance": total})
-
-    # --- Liquidity / risk analysis ---
-    if "liquidity" in tokens or "risk" in tokens or "runway" in tokens or "exposure" in tokens:
-        cash_on_hand = 15_750_000
-        credit_lines = 5_000_000
-        committed_outflows_30d = 6_100_000
-        avg_daily_net_outflow = 180_000
-        runway_days = round((cash_on_hand + credit_lines - committed_outflows_30d) / avg_daily_net_outflow, 1)
-        buffer_ratio = round((cash_on_hand + credit_lines) / committed_outflows_30d, 2)
-        stressed_outflow = avg_daily_net_outflow * 1.8
-        stressed_runway = round((cash_on_hand + credit_lines - committed_outflows_30d) / stressed_outflow, 1)
-        risk_level = "LOW" if buffer_ratio >= 2 else ("MODERATE" if buffer_ratio >= 1.2 else "HIGH")
-        text = (
-            "Liquidity Risk Analysis:\n"
-            f"- Buffer Ratio: {buffer_ratio} (Target ≥ 1.5)\n"
-            f"- Base Runway: {runway_days} days\n"
-            f"- Stressed Runway: {stressed_runway} days (stress factor 1.8x)\n"
-            f"- Credit Lines Available: ${credit_lines:,}\n"
-            f"- Risk Level: {risk_level}\n\n"
-            "Recommendations:\n"
-            "• Reconfirm large upcoming outflows (> $250K)\n"
-            "• Consider activating additional short-term credit if runway < 90 days\n"
-            "• Accelerate collection on top 10 AR exposures\n"
-        )
-        data = {
-            "buffer_ratio": buffer_ratio,
-            "base_runway_days": runway_days,
-            "stressed_runway_days": stressed_runway,
-            "risk_level": risk_level,
-            "credit_lines": credit_lines,
-        }
-        return respond(text, data)
-
-    # --- KPI metrics ---
-    if "kpi" in tokens or "metrics" in tokens:
-        kpis = {"dso": 42.3, "dpo": 47.8, "working_capital_ratio": 1.26, "operating_cash_flow_ytd": 12_400_000}
-        text = "Working Capital KPIs:\n" + "\n".join(f"- {k}: {v}" for k, v in kpis.items())
-        return respond(text, {"kpis": kpis})
-
-    # Fallback help
-    return respond(
-        "Treasury assistant help:\n"
-        "Examples:\n"
-        "- latest payment approvals\n"
-        "- pending payments\n"
-        "- cash position\n"
-        "- analyze liquidity risk\n"
-        "- show KPIs"
-    )
+        _add_history(assistant_entry)
+        return assistant_entry
 
 @app.get("/api/frontend-config")
 async def frontend_config():

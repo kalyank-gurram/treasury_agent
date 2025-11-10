@@ -3,7 +3,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Request, HTTPException, Depends
 from pydantic import BaseModel
 from ..schemas.chat import ChatIn, ChatOut
-from ..services.persistent_chat import PersistentChatService
+from ..langchain import LangChainChatService
 from ..domain.entities.user import User, Permission
 from ..infrastructure.security.auth_middleware import AuthMiddleware
 from ..infrastructure.observability import (
@@ -29,10 +29,10 @@ class MessageRequest(BaseModel):
     user_id: Optional[str] = None
 
 
-def get_chat_service(request: Request) -> PersistentChatService:
-    """Get persistent chat service with DI container."""
+def get_chat_service(request: Request) -> LangChainChatService:
+    """Get LangChain chat service with DI container."""
     container = request.app.state.container
-    return container.get(PersistentChatService)
+    return container.get(LangChainChatService)
 
 
 def get_auth_middleware(request: Request) -> AuthMiddleware:
@@ -51,7 +51,7 @@ async def get_current_user(request: Request) -> User:
 @router.get("/history", response_model=List[ChatMessage])
 async def get_chat_history(
     request: Request,
-    chat_service: PersistentChatService = Depends(get_chat_service),
+    chat_service: LangChainChatService = Depends(get_chat_service),
     current_user: User = Depends(get_current_user)
 ):
     """Get chat history for the current user."""
@@ -61,29 +61,19 @@ async def get_chat_history(
     logger.info("Fetching chat history", username=current_user.username)
     
     try:
-        # Get conversation history from memory store
-        history = await chat_service.get_conversation_history(current_user.username, limit=50)
+        # Get conversation history from LangChain memory store
+        history = chat_service.get_conversation_history(current_user.username, limit=50)
         
         # Convert to ChatMessage format
         chat_messages = []
-        for item in history:
-            # Add user message
-            if item.user_message:
-                chat_messages.append(ChatMessage(
-                    id=f"user_{item.session_id}_{len(chat_messages)}",
-                    role="user",
-                    content=item.user_message,
-                    timestamp=item.created_at.isoformat()
-                ))
-            
-            # Add assistant message  
-            if item.ai_response:
-                chat_messages.append(ChatMessage(
-                    id=f"assistant_{item.session_id}_{len(chat_messages)}",
-                    role="assistant", 
-                    content=item.ai_response,
-                    timestamp=item.created_at.isoformat()
-                ))
+        for i, item in enumerate(history):
+            # LangChain history returns simplified format
+            chat_messages.append(ChatMessage(
+                id=f"msg_{i}_{hash(str(item))}",
+                role="user" if i % 2 == 0 else "assistant", 
+                content=str(item.get('content', str(item))),
+                timestamp=datetime.now().isoformat()  # Simplified timestamp
+            ))
         
         logger.info("Chat history retrieved", username=current_user.username, message_count=len(chat_messages))
         return chat_messages
@@ -98,7 +88,7 @@ async def get_chat_history(
 async def send_message(
     message_req: MessageRequest,
     request: Request,
-    chat_service: PersistentChatService = Depends(get_chat_service),
+    chat_service: LangChainChatService = Depends(get_chat_service),
     current_user: User = Depends(get_current_user)
 ):
     """Send a chat message and get AI response."""
@@ -115,17 +105,12 @@ async def send_message(
     )
     
     try:
-        # Get or create conversation context
-        context = chat_service.memory_store.get_or_create_context(
-            user_id=current_user.username,
-            role=current_user.role,
-            entities=current_user.entity_access or []
-        )
-        
-        # Process the chat message using persistent chat service with memory
+        # Process the chat message using LangChain service with memory
         result = await chat_service.process_chat_with_memory(
             question=message_req.message,
-            context=context
+            user_id=current_user.username,
+            entity=current_user.entity_access[0] if current_user.entity_access else None,
+            user_role=current_user.role
         )
         
         # Format response as ChatMessage using the formatted response
@@ -161,7 +146,7 @@ async def send_message(
 async def chat(
     inp: ChatIn,
     request: Request,
-    chat_service: PersistentChatService = Depends(get_chat_service),
+    chat_service: LangChainChatService = Depends(get_chat_service),
     current_user: User = Depends(get_current_user)
 ):
     """Chat endpoint with observability and dependency injection."""
@@ -190,20 +175,12 @@ async def chat(
     )
     
     try:
-        # Get or create conversation context
-        entities = current_user.entity_access or []
-        if inp.entity and inp.entity not in entities:
-            entities = [inp.entity]  # Use specified entity if different
-        context = chat_service.memory_store.get_or_create_context(
-            user_id=current_user.username,
-            role=current_user.role,
-            entities=entities
-        )
-        
-        # Process chat request with memory
+        # Process chat request with LangChain memory
         result = await chat_service.process_chat_with_memory(
             question=inp.question,
-            context=context
+            user_id=current_user.username,
+            entity=inp.entity,
+            user_role=current_user.role
         )
         
         # Log success
