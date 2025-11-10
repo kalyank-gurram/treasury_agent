@@ -1,4 +1,4 @@
-"""Main Treasury Agent LangGraph implementation."""
+"""Main Treasury Agent LangGraph implementation with multi-intent support."""
 
 from langgraph.graph import StateGraph, END
 from .types import AgentState
@@ -15,31 +15,28 @@ from .nodes import (
     node_narrative,
 )
 
-def route(state: AgentState):
-    """Route to appropriate node based on classified intent."""
-    intent = state.get("intent","")
-    mapping = {
-        "balances": "balances",
-        "forecast": "forecast",
-        "approve_payment": "approve",
-        "anomalies": "anomalies",
-        "kpis": "kpis",
-        "whatifs": "whatifs",
-        "exposure": "exposure",
-        "rag_check": "rag",
-        "narrative": "narrative",
-    }
-    return mapping.get(intent, "balances")
+# Mapping of intents to node names
+INTENT_NODE_MAPPING = {
+    "balances": "balances",
+    "forecast": "forecast",
+    "approve_payment": "approve",
+    "anomalies": "anomalies",
+    "kpis": "kpis",
+    "whatifs": "whatifs",
+    "exposure": "exposure",
+    "rag_check": "rag",
+    "narrative": "narrative",
+}
 
 def build_graph(checkpointer=None):
-    """Build and compile the Treasury Agent LangGraph workflow.
-    
+    """Build and compile the Treasury Agent LangGraph workflow with multi-intent support.
+
     Args:
         checkpointer: Optional checkpointer for memory persistence
     """
     g = StateGraph(AgentState)
-    
-    # Add all nodes
+
+    # 1️⃣ Add all nodes
     g.add_node("intent", node_intent)
     g.add_node("balances", node_balances)
     g.add_node("forecast", node_forecast)
@@ -51,27 +48,23 @@ def build_graph(checkpointer=None):
     g.add_node("rag", node_rag)
     g.add_node("narrative", node_narrative)
 
-    # Set entry point and routing
+    # 2️⃣ Set entry point
     g.set_entry_point("intent")
-    g.add_conditional_edges("intent", route, {
-        "balances": "balances",
-        "forecast": "forecast",
-        "approve": "approve",
-        "anomalies": "anomalies",
-        "kpis": "kpis",
-        "whatifs": "whatifs",
-        "exposure": "exposure",
-        "rag": "rag",
-        "narrative": "narrative",
-    })
-    
-    # All terminal nodes end the workflow
-    terminal_nodes = ["balances", "forecast", "approve", "anomalies", "kpis", 
-                     "whatifs", "exposure", "rag", "narrative"]
+
+    # 3️⃣ Add conditional edges from intent node to all possible nodes
+    for intent_name, node_name in INTENT_NODE_MAPPING.items():
+        g.add_edge(
+            "intent",
+            node_name,
+                
+        )
+
+    # 4️⃣ All terminal nodes go to END
+    terminal_nodes = list(INTENT_NODE_MAPPING.values())
     for node in terminal_nodes:
         g.add_edge(node, END)
-    
-    # Compile with optional checkpointer for memory
+
+    # 5️⃣ Compile with optional checkpointer
     if checkpointer:
         return g.compile(checkpointer=checkpointer)
     else:

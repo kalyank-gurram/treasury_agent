@@ -1,28 +1,32 @@
-# Treasury Enterprise Workspace
+# Treasury Agent - LangGraph Multi-Agent System
 
-**Enterprise-grade Domain-Driven Microservices architecture** for treasury & cash management featuring:
+**Enterprise Treasury Management powered by LangGraph** featuring intelligent agent workflows for cash management, forecasting, and analytics.
 
-## 🏗️ **Enterprise Architecture**
-- **Microservices:** Domain-bounded services with clear boundaries  
-- **Monorepo:** Organized workspace with `services/`, `apps/`, `shared/`, `config/`
-- **Environment Separation:** Local, development, staging, production configs
-- **Event-Driven:** Async communication between service boundaries
+## 🤖 **LangGraph Agent Architecture**
+- **Multi-Node Workflow:** 10 specialized nodes with intelligent routing
+- **State Management:** Persistent conversation memory and context
+- **Intent Classification:** Automatic routing to appropriate treasury functions
+- **Agent Nodes:** balances, forecast, approve, anomalies, kpis, whatifs, exposure, rag, narrative
+
+## 🏗️ **Core Components**
+- **`services/treasury_service/`** - Main FastAPI service with LangGraph integration
+- **`services/treasury_service/graph/`** - LangGraph workflow definitions and nodes
+- **`services/treasury_service/models/`** - LLM routing and model management
+- **`services/treasury_service/forecasting/`** - ARIMA & GradientBoost forecasting models
+- **`services/treasury_service/kpis/`** - Working capital analytics (DSO/DPO)
+- **`services/treasury_service/detectors/`** - Anomaly detection algorithms
+- **`rag/`** - RAG system with FAISS vectorstore for policy search
+- **`apps/treasury-dashboard/`** - Next.js React dashboard
 
 ## 🚀 **Treasury Capabilities**  
-- **LangGraph** intelligent routing + domain subgraphs (9+ use cases)
-- **Large datasets** (optimized ~30k transactions, 5-second generation)
-- **Forecasting** (ARIMA + GradientBoost models)
-- **Anomaly detection** (statistical outlier detection)
-- **Working-capital KPIs** (DSO/DPO analytics)
-- **Liquidity modeling** with scenario analysis
-- **Counterparty exposure** management
-- **RAG-powered** policy search
-- **Narrative reporting** with automated insights
-
-## 🎯 **Modern Frontend**
-- **Next.js Dashboard** (React, TypeScript, Tailwind CSS)
-- **Role-based authentication** and authorization
-- **Real-time updates** and responsive design
+- **LangGraph Workflow:** 10-node intelligent agent system
+- **Mock Data Generation:** ~30k realistic treasury transactions (5-second setup)
+- **Forecasting Models:** ARIMA + GradientBoost for cash flow prediction
+- **Anomaly Detection:** Statistical outlier detection for transactions
+- **Working Capital KPIs:** DSO/DPO analytics and liquidity modeling
+- **RAG System:** FAISS-powered policy document search
+- **Chat Interface:** Natural language treasury assistant
+- **Real-time Analytics:** Live treasury metrics and reporting
 
 ## Quickstart
 
@@ -50,30 +54,28 @@ poetry run python scripts/build_vectorstore.py
 
 ### Start Services
 
-**✅ Simple Commands**
+**✅ Quick Start Commands**
 ```bash
-# Start treasury service (kills any process on port 8000 first)
+# Start treasury service (port 8000, auto-restarts on changes)
 ./start.sh
 
 # Start frontend dashboard (in another terminal)
 cd apps/treasury-dashboard && npm run dev
 ```
 
-**Alternative: Manual Command**
+**Manual Startup (Alternative)**
 ```bash
-# Manual startup (from project root)
+# Direct uvicorn command
 .venv/bin/python -m uvicorn services.treasury_service.enhanced_app:app --port 8000 --reload
 ```
 
 **Access the backend at:** `http://localhost:8000`  
 **Access the frontend at:** `http://localhost:3000`
 
-### 🔐 **Demo Login Credentials**
-Use these credentials to login to the frontend:
-- **CFO**: `cfo` / `demo123` (Full access)
-- **Manager**: `manager` / `demo123` (Management access)  
-- **Analyst**: `analyst` / `demo123` (View access)
-- **Admin**: `admin` / `demo123` (Admin access)
+### 🔐 **Access URLs**
+- **Backend API:** `http://localhost:8000` (FastAPI with LangGraph)
+- **Frontend Dashboard:** `http://localhost:3000` (Next.js React)
+- **API Documentation:** `http://localhost:8000/docs` (Interactive Swagger UI)
 
 ## Data Generation
 
@@ -88,77 +90,85 @@ The mock data script generates realistic treasury datasets:
 
 ## Enterprise Architecture
 
-### 🏗️ **Workspace Structure**
+### 🏗️ **Project Structure**
 ```
-treasury_agent/                    # Enterprise workspace root
-├── services/                      # Domain-bounded microservices
-│   └── treasury_service/          # Core treasury management service
-│       ├── routers/              # FastAPI HTTP controllers
-│       ├── domain/               # Business logic and entities
-│       ├── infrastructure/       # External concerns (DB, cache, etc.)
-│       └── tools/                # Service-specific utilities
-├── apps/                         # Frontend applications
-│   └── treasury-dashboard/       # Next.js React dashboard
-├── shared/                       # Cross-cutting concerns
-│   ├── types/                    # Common type definitions
-│   ├── utils/                    # Shared utilities
-│   └── config/                   # Configuration management
-├── config/                       # Environment-specific configs
-│   ├── local/                    # Local development
-│   ├── development/              # Dev environment
-│   ├── staging/                  # Staging environment
-│   └── production/               # Production environment
-└── infrastructure/               # Platform and deployment
-    ├── environments/             # Environment-specific infrastructure
-    ├── monitoring/               # Observability and logging
-    └── security/                 # Security configurations
+treasury_agent/
+├── services/treasury_service/      # Main FastAPI service
+│   ├── enhanced_app.py            # FastAPI application entry point
+│   ├── graph/                     # LangGraph workflow system
+│   │   ├── graph.py              # Main workflow orchestration
+│   │   ├── nodes/                # Individual agent nodes
+│   │   └── types.py              # State definitions
+│   ├── models/                    # LLM model management
+│   ├── forecasting/              # ARIMA & GradientBoost models
+│   ├── kpis/                     # Working capital analytics
+│   ├── detectors/                # Anomaly detection
+│   ├── routers/                  # FastAPI route handlers
+│   └── tools/                    # Utility functions
+├── apps/treasury-dashboard/       # Next.js React frontend
+├── rag/                          # RAG system & vectorstore
+│   ├── docs/                     # Policy documents
+│   └── faiss_store/              # FAISS vector database
+├── data/                         # Generated mock datasets
+├── scripts/                      # Setup & data generation
+└── start.sh                     # Quick startup script
 ```
 
-### 🎯 **Service Boundaries**
-- **`services/treasury_service/`**: Core treasury domain service with LangGraph agents, forecasting, KPIs, and RAG
-- **`apps/treasury-dashboard/`**: Modern React dashboard with TypeScript, authentication, and real-time features
-- **`shared/`**: Enterprise utilities, types, and cross-cutting concerns
+### 🎯 **Key Components**
+- **`services/treasury_service/enhanced_app.py`**: Main FastAPI server with all endpoints
+- **`services/treasury_service/graph/graph.py`**: LangGraph workflow with 10 specialized nodes
+- **`apps/treasury-dashboard/`**: Next.js React dashboard with TypeScript
+- **`rag/`**: RAG system with FAISS vectorstore for policy document search
+- **`data/`**: Auto-generated realistic treasury datasets for testing
 
-## API Endpoints
+## 🌐 **API Endpoints**
 
-- **`/chat`**: Main agent interaction endpoint
-- **`/analytics`**: Treasury analytics and KPIs
-- **`/payments`**: Payment processing operations
-- **`/rag/search`**: Policy document search
+- **`/chat/message`** - Main LangGraph agent interaction
+- **`/chat/history`** - Conversation history retrieval
+- **`/analytics/*`** - Treasury analytics and KPIs
+- **`/payments/*`** - Payment processing with MockBankAPI
+- **`/rag/search`** - Policy document search via RAG
+- **`/health`** - Service health check
 
-### 🔎 Chat Usage Examples
+### 🔎 **LangGraph Agent Queries**
 
-Interactive treasury assistant queries (after starting backend):
+The LangGraph agent automatically routes queries to appropriate nodes:
 
 ```bash
-# Latest approvals
+# Cash balances & positions
 curl -X POST http://localhost:8000/chat/message \
     -H 'Content-Type: application/json' \
-    -d '{"query":"latest payment approvals"}' | jq .content
+    -d '{"query":"show cash balances"}'
 
-# Liquidity risk analysis
+# Forecasting & predictions  
 curl -X POST http://localhost:8000/chat/message \
     -H 'Content-Type: application/json' \
-    -d '{"query":"analyze liquidity risk"}' | jq .content
-
-# Cash position
-curl -X POST http://localhost:8000/chat/message \
-    -H 'Content-Type: application/json' \
-    -d '{"query":"cash position"}' | jq .data
+    -d '{"query":"forecast next month cash flow"}'
 
 # Working capital KPIs
 curl -X POST http://localhost:8000/chat/message \
     -H 'Content-Type: application/json' \
-    -d '{"query":"show kpis"}' | jq .data
+    -d '{"query":"calculate DSO and DPO"}'
 
-# Chat history (rolling last 100 messages)
-curl http://localhost:8000/chat/history | jq .messages | head -n 20
+# Anomaly detection
+curl -X POST http://localhost:8000/chat/message \
+    -H 'Content-Type: application/json' \
+    -d '{"query":"find transaction anomalies"}'
+
+# RAG policy search
+curl -X POST http://localhost:8000/chat/message \
+    -H 'Content-Type: application/json' \
+    -d '{"query":"payment approval policies"}'
+
+# Chat history (last 100 messages)
+curl http://localhost:8000/chat/history | jq
 ```
 
-Returned fields:
-- `content`: Render-ready assistant reply
-- `data`: Structured payload (approvals, cash_position, kpis, etc.)
-- `id`, `role`, `timestamp`: For UI rendering and history
+**LangGraph Response Structure:**
+- `content`: Human-readable agent response
+- `data`: Structured data (balances, forecasts, KPIs, etc.)
+- `intent`: Detected intent and routing decision
+- `metadata`: Agent execution details
 
 ## Deploy
 
