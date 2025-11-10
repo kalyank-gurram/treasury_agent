@@ -58,8 +58,16 @@ def configure_dependencies() -> Container:
     
     # Register application services (will be added when server is in Python path)
     try:
-        from ...services.chat import ChatService
-        container.register_transient(ChatService, ChatService)
+        from ...services.persistent_chat import PersistentChatService, create_persistent_chat_service
+        
+        # Register PersistentChatService as singleton with factory
+        container.register_singleton(
+            PersistentChatService,
+            factory=lambda: create_persistent_chat_service(
+                treasury_service=container.get(TreasuryDomainService),
+                container=container
+            )
+        )
     except ImportError:
         # Server module not available in this context
         pass

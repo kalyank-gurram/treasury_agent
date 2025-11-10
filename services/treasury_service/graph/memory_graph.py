@@ -1,10 +1,18 @@
-"""Main Treasury Agent LangGraph implementation."""
+"""
+Enhanced LangGraph builder with memory support.
+
+Extends the existing graph builder to support conversation memory and persistence
+using LangGraph's built-in checkpointer system.
+"""
 
 from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.memory import MemorySaver
+from typing import Optional, Any
+
 from .types import AgentState
 from .nodes import (
     node_intent,
-    node_balances,
+    node_balances, 
     node_forecast,
     node_approve,
     node_anomalies,
@@ -15,12 +23,13 @@ from .nodes import (
     node_narrative,
 )
 
+
 def route(state: AgentState):
     """Route to appropriate node based on classified intent."""
-    intent = state.get("intent","")
+    intent = state.get("intent", "")
     mapping = {
         "balances": "balances",
-        "forecast": "forecast",
+        "forecast": "forecast", 
         "approve_payment": "approve",
         "anomalies": "anomalies",
         "kpis": "kpis",
@@ -31,12 +40,9 @@ def route(state: AgentState):
     }
     return mapping.get(intent, "balances")
 
-def build_graph(checkpointer=None):
-    """Build and compile the Treasury Agent LangGraph workflow.
-    
-    Args:
-        checkpointer: Optional checkpointer for memory persistence
-    """
+
+def build_graph(checkpointer: Optional[Any] = None):
+    """Build and compile the Treasury Agent LangGraph workflow with optional memory."""
     g = StateGraph(AgentState)
     
     # Add all nodes
@@ -76,3 +82,15 @@ def build_graph(checkpointer=None):
         return g.compile(checkpointer=checkpointer)
     else:
         return g.compile()
+
+
+def build_graph_with_memory():
+    """Build graph with in-memory checkpointer for development/testing."""
+    memory = MemorySaver()
+    return build_graph(checkpointer=memory)
+
+
+# Backward compatibility - original stateless function  
+def build_stateless_graph():
+    """Build original stateless graph."""
+    return build_graph(checkpointer=None)
