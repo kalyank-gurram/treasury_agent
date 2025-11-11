@@ -1,0 +1,31 @@
+[tool.poetry][tool.poetry]
+
+name = "simple-treasury-learning"name = "simple-learning-system"
+
+version = "1.0.0"version = "1.0.0"
+
+description = "Simple Treasury Agent Learning System"description = "Super Simple 2-Agent Learning System"
+
+authors = ["Learning <learning@example.com>"]authors = ["Learning <learning@example.com>"]
+
+
+
+[tool.poetry.dependencies][tool.poetry.dependencies]
+
+python = "^3.11"python = "^3.11"
+
+fastapi = "^0.104.1"fastapi = "^0.104.1"
+
+uvicorn = "^0.24.0"uvicorn = "^0.24.0"
+
+langgraph = "^0.0.65"langgraph = "^0.0.65"
+
+langchain = "^0.1.0"langchain = "^0.1.0"
+
+
+
+[build-system][build-system]
+
+requires = ["poetry-core"]requires = ["poetry-core"]
+
+build-backend = "poetry.core.masonry.api"build-backend = "poetry.core.masonry.api"
