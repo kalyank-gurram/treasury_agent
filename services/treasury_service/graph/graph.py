@@ -14,6 +14,7 @@ from .nodes import (
     node_rag,
     node_narrative,
 )
+from ..guardrails import guardrails_node
 
 # Mapping of intents to node names
 INTENT_NODE_MAPPING = {
@@ -36,7 +37,9 @@ def build_graph(checkpointer=None):
     """
     g = StateGraph(AgentState)
 
-    # 1️⃣ Add all nodes
+    # Add guardrails node
+    g.add_node("guardrails", guardrails_node)
+    # Add all agent nodes
     g.add_node("intent", node_intent)
     g.add_node("balances", node_balances)
     g.add_node("forecast", node_forecast)
@@ -48,23 +51,25 @@ def build_graph(checkpointer=None):
     g.add_node("rag", node_rag)
     g.add_node("narrative", node_narrative)
 
-    # 2️⃣ Set entry point
-    g.set_entry_point("intent")
+    # Set entry point to guardrails
+    g.set_entry_point("guardrails")
+    # Route from guardrails to intent (only if passed)
+    def guardrails_route(state):
+        if state.get("guardrails_status") == "blocked":
+            return END
+        return "intent"
+    g.add_conditional_edges("guardrails", guardrails_route, {"intent": "intent"})
 
-    # 3️⃣ Add conditional edges from intent node to all possible nodes
+    # Add conditional edges from intent node to all possible nodes
     for intent_name, node_name in INTENT_NODE_MAPPING.items():
-        g.add_edge(
-            "intent",
-            node_name,
-                
-        )
+        g.add_edge("intent", node_name)
 
-    # 4️⃣ All terminal nodes go to END
+    # All terminal nodes go to END
     terminal_nodes = list(INTENT_NODE_MAPPING.values())
     for node in terminal_nodes:
         g.add_edge(node, END)
 
-    # 5️⃣ Compile with optional checkpointer
+    # Compile with optional checkpointer
     if checkpointer:
         return g.compile(checkpointer=checkpointer)
     else:
