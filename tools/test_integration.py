@@ -138,7 +138,7 @@ if __name__ == "__main__":
     tester.test_mock_api_integration()
     
     # Save results for reference
-    with open("/Users/kalyan.gurram/workspace/learning/agentic-projects/treasury_agent/logs/integration_test_results.json", "w") as f:
+    with open("logs/integration_test_results.json", "w") as f:
         json.dump({
             "timestamp": datetime.now().isoformat(),
             "test_results": tester.results,

@@ -10,7 +10,7 @@
 ./scripts/start-treasury.sh
 
 # Option 2: Direct command with full path to virtual environment Python
-cd services/treasury_service && /Users/kalyan.gurram/workspace/learning/agentic-projects/treasury_agent/.venv/bin/python enhanced_app.py
+cd services/treasury_service && .venv/bin/python enhanced_app.py
 ```
 
 ### Test Service is Running
