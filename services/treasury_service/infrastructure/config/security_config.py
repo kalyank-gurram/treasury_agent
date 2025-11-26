@@ -47,8 +47,8 @@ class SecurityConfig(BaseModel):
     )
     allowed_origins: List[str] = Field(
         default=[
-            "http://localhost:3000", 
-            "http://127.0.0.1:7861", 
+            "http://localhost:3000",
+            "http://127.0.0.1:7861",
             "http://localhost:7861"
         ],
         description="Allowed CORS origins"

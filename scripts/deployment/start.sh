@@ -38,4 +38,4 @@ echo "Press Ctrl+C to stop the server"
 echo ""
 
 # Start the server
-poetry run python server/app.py
+poetry run python -m services.treasury_service.app

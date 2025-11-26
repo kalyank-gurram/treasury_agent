@@ -94,6 +94,7 @@ yarn-error.log*
 coverage/
 storybook-static/
 *.cache
+out
 
 # ─────────────────────────────
 #  Docker / Deploy

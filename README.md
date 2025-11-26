@@ -183,8 +183,7 @@ poetry run python scripts/generate_mock_data.py
 poetry run python scripts/build_vectorstore.py
 
 # Start backend and UI
-poetry run uvicorn server.app:app --reload --port 8000
-poetry run python ui/gradio_app.py
+poetry run uvicorn services.treasury_service.app:app --reload --port 8000
 
 Setup Script (Recommended)
 
@@ -211,8 +210,7 @@ Mock data already exists — skipping.
 No FAISS store found — building vectorstore...
 
 Setup complete! You can now run:
-   poetry run uvicorn server.app:app --reload --port 8000
-   poetry run python ui/gradio_app.py
+   poetry run uvicorn services.treasury_service.app:app --reload --port 8000
 
 ## Setup Scripts Overview
 

@@ -29,8 +29,7 @@ def main():
         print("FAISS vectorstore already exists - skipping.")
 
     print("\nSetup complete! You can now run:")
-    print("   poetry run uvicorn server.app:app --reload --port 8000")
-    print("   poetry run python ui/gradio_app.py")
+    print("   poetry run uvicorn services.treasury_service.app:app --reload --port 8000")
 
 if __name__ == "__main__":
     try:

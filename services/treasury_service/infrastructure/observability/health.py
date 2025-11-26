@@ -843,7 +843,13 @@ class HealthMonitor:
             self.health_statistics['avg_response_time'] = (
                 (current_avg * (total_checks - 1) + response_time) / total_checks
             )
-
+    def get_liveness(self) -> Dict[str, Any]:
+        """Simple liveness check to confirm application is running."""
+        return {
+            "status": "alive",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "monitoring_active": self.monitoring_active
+        }
 
 # Global health monitor instance  
 _health_monitor: HealthMonitor = None
