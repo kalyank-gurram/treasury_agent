@@ -2,11 +2,11 @@ name: Backend Deploy (dev, scheduled)
 
 on:
   schedule:
-    # GitHub cron is UTC. Example: 3 times per day at 03:30, 11:30, 19:30 UTC.
-    # Adjust to whatever times you want.
-    - cron: "30 3 * * *"
-    - cron: "30 11 * * *"
-    - cron: "30 19 * * *"
+    # # GitHub cron is UTC. Example: 3 times per day at 03:30, 11:30, 19:30 UTC.
+    # # Adjust to whatever times you want.
+    # - cron: "30 3 * * *"
+    # - cron: "30 11 * * *"
+    # - cron: "30 19 * * *"
   workflow_dispatch: {}  # allow manual "Run workflow" for dev if needed
 
 jobs:
