@@ -1,7 +1,7 @@
 """Narrative reporting node for Treasury Agent."""
 
 from ...detectors.anomaly import outflow_anomalies
-from ...reports.narrative import daily_cfo_brief
+from services.treasury_service.reports.narrative import daily_cfo_brief
 from ..types import AgentState
 from .utils import api
 

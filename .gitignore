@@ -70,7 +70,6 @@ logs/
 outputs/
 artifacts/
 checkpoints/
-reports/
 
 # Jupyter / IPython
 .ipynb_checkpoints/
