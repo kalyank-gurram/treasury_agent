@@ -60,8 +60,8 @@ data/
 !data/.gitkeep
 
 # Generated FAISS vector store
-rag/faiss_store/
-!rag/docs/
+# rag/faiss_store/
+# !rag/docs/
 
 # Temporary or generated files
 tmp/
