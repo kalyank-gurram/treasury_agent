@@ -49,18 +49,28 @@ jobs:
         run: |
           az extension add --name containerapp --yes || az extension update --name containerapp
 
-      - name: Build and push image to ACR
+      - name: Build and push image with Docker
         run: |
           IMAGE_TAG=dev-${GITHUB_SHA::7}
-          echo "Using dev image tag: $IMAGE_TAG"
+          FULL_IMAGE_NAME=$ACR_NAME.azurecr.io/$IMAGE_NAME:$IMAGE_TAG
 
-          az acr build \
-            --registry $ACR_NAME \
-            --image $IMAGE_NAME:$IMAGE_TAG \
-            --file infrastructure/environments/prod/Dockerfile \
-              .
+          echo "Using dev image tag: $IMAGE_TAG"
+          echo "Full image name: $FULL_IMAGE_NAME"
+
+          # Login Docker to ACR
+          az acr login --name $ACR_NAME
+
+          # Build image locally on GitHub runner
+          docker build \
+            -f infrastructure/environments/prod/Dockerfile \
+            -t $FULL_IMAGE_NAME \
+            .
+
+          # Push image to ACR
+          docker push $FULL_IMAGE_NAME
 
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
 
       - name: Update dev Container App
         run: |
