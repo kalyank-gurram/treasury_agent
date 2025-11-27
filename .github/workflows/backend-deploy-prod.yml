@@ -1,32 +1,34 @@
-name: Backend CI/CD
+name: Backend Deploy (prod)
 
 on:
   push:
-    # branches: [ main ]
-    branches:
-      - "**"
-    # paths:
-    #   - "services/**"
-    #   - "rag/**"
-    #   - "scripts/**"
-    #   - "Dockerfile"
-    #   - "pyproject.toml"
-    #   - ".github/workflows/backend.yml"
+    branches: [ main ]
+    paths:
+      - "services/**"
+      - "rag/**"
+      - "scripts/**"
+      - "Dockerfile"
+      - "pyproject.toml"
+      - ".github/workflows/backend-deploy-prod.yml"
 
 jobs:
-  build-and-deploy:
+  deploy-prod:
     runs-on: ubuntu-latest
+    environment:
+      name: production  # enables environment protection if you want approvals
 
     env:
       ACR_NAME: treasuryagentacr
       RESOURCE_GROUP: rg-treasury-agent-dev
-      CONTAINER_APP_NAME: treasury-agent-app
+      CONTAINER_APP_NAME: treasury-agent-app   # prod app
       IMAGE_NAME: treasury-agent
       AZURE_REGION: centralindia
 
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -39,10 +41,8 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction --no-ansi
 
-      # Optional: you can comment this out if you don't have tests yet
       - name: Run tests
-        run: |
-          poetry run pytest
+        run: poetry run pytest
 
       - name: Azure login
         uses: azure/login@v2
@@ -55,17 +55,19 @@ jobs:
 
       - name: Build and push image to ACR
         run: |
-          IMAGE_TAG=${GITHUB_SHA::7}
-          echo "Using image tag: $IMAGE_TAG"
+          IMAGE_TAG=prod-${GITHUB_SHA::7}
+          echo "Using prod image tag: $IMAGE_TAG"
+
           az acr build \
             --registry $ACR_NAME \
             --image $IMAGE_NAME:$IMAGE_TAG \
             .
+
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Update Azure Container App to new image
+      - name: Update prod Container App
         run: |
-          echo "Deploying image: $ACR_NAME.azurecr.io/$IMAGE_NAME:${IMAGE_TAG}"
+          echo "Deploying prod image: $ACR_NAME.azurecr.io/$IMAGE_NAME:${IMAGE_TAG}"
           az containerapp update \
             --name $CONTAINER_APP_NAME \
             --resource-group $RESOURCE_GROUP \
